@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>新年快乐!!!</title>
+    <style>
+        body{
+            margin: 0;
+            padding: 0;
+            background-color: black;
+                -webkit-background-size: cover;
+                -o-background-size: cover;                
+                background-size: cover;
+        }
+    </style>
+</head>
+<body>
+<canvas id="mycanvas"></canvas>
+<script>
+    var flyingSound = new Audio("./0.mp3");
+    var explosion = new Audio("./1.mp3");
+    var canvas = document.getElementById("mycanvas");
+    var context = canvas.getContext("2d");
+    var g = 50;
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+
+    function clearCanvas(){
+        context.fillStyle = "#000000";
+        context.fillRect(0,0,canvas.width,canvas.height);
+    }
+    window.addEventListener("reszie", resizeCanvas, false);
+    resizeCanvas();
+    function mouseDownHandler(e){
+        var x = e.clientX;
+        var y = e.clientY;
+        fire(x, y);
+    }
+    document.addEventListener("mousedown", mouseDownHandler, false);
+    var fireWorks = [];
+    function gnerateFireWorks(x, y, color) {
+        var count = 114;
+        for (var i = 0; i < count; ++i) {   
+            var angle = Math.random() * 360 * Math.PI / 180;
+            var velocity = Math.random() * 100;
+            fireWorks.push([x, y, velocity * Math.cos(angle), velocity * Math.sin(angle), color]);
+        }
+    }
+
+    function move(){
+        var delta_t = 30;
+        function tick() {
+
+            for (var i = 0; i < fireWorks.length; ++i){
+                fireWorks[i][0] += fireWorks[i][2] * delta_t / 1000;
+                fireWorks[i][1] += fireWorks[i][3] * delta_t / 1000;
+                fireWorks[i][3] += g * delta_t / 1000;
+            }
+            for (var i = 0; i < flying.length; ++i){
+                if (flying[i][4]) {
+                    flying[i][1] -= 10;
+                    flying[i][0] += Math.random() * 2 - 1;
+                    if (flying[i][1] < flying[i][2]){
+                        gnerateFireWorks(flying[i][0], flying[i][1], flying[i][3]);
+                        flying[i][4] = false;
+                        explosion.load();
+                        explosion.play();
+                    }
+                }
+            }
+            context.globalCompositeOperation = 'destination-out';
+	        context.fillStyle = 'rgba(0,0,0,'+10/100+')';
+	        context.fillRect(0,0,canvas.width,canvas.height);
+	        context.globalCompositeOperation = 'lighter';
+            drawFireWorks();
+        }
+        setInterval(tick, delta_t);
+    }
+    move();
+
+    function drawFireWorks(){
+        clearCanvas();
+        for (var i = 0; i < fireWorks.length; ++i){
+            context.beginPath();
+            context.arc(fireWorks[i][0], fireWorks[i][1], 2, 0, Math.PI*2, false)
+            context.closePath();
+            context.fillStyle = fireWorks[i][4];
+            context.fill();
+        }
+        for (var i = 0; i < flying.length; ++i){
+            if (flying[i][4]){
+                context.beginPath();
+                context.arc(flying[i][0], flying[i][1], 2, 0, Math.PI*2, false)
+                context.closePath();
+                context.fillStyle = flying[i][3];
+                context.fill();
+            }
+        }
+    }
+    var flying = [];
+    function fire(x, y) {
+        var color = "#" + Math.floor(Math.random() * 0xffffff).toString(16);
+        flying.push([x, window.innerHeight, y, color, true]);
+        flyingSound.load();
+        flyingSound.play();
+        
+    }
+</script>
+</body>
+</html>
